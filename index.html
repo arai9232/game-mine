@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+
+
+</head>
+<body>
+    Level <input type="number" id="level" name="tentacles" value=10    min="10" max="20">
+    Size <input type="number" id="size" name="tentacles" value=15    min="10" max="20">
+    Mines <input type="number" id="mnum" name="minenum" min="0" max="10">
+
+ 
+    
+    
+</body>
+
+
+<script>
+
+function clearScreen(){
+    document.clear();
+}
+
+function createTile(){
+
+    var elm = document.getElementById("game");
+    if (elm != null ) elm.innerHTML ="";
+    var size = document.getElementById("size").value;
+    gameStatus = 0;
+
+    gamex = size;
+    gamey = size;
+
+//    gamex = 10;
+//    gamey = 10;
+
+    //$('div').remove();
+ 
+    console.log("createTile()")
+    div = document.createElement('div');
+    div.id = "game";
+    document.body.appendChild(div);
+    doc = document.getElementById('game');
+ 
+ 
+
+    for(var ii= 0 ; ii < gamey ; ii ++){
+        for(var i = 0 ; i < gamex ; i ++){
+            addButton(i,ii);
+        }
+        addBr();
+    }
+
+    initGame();
+}
+function initGame(){
+
+    elm = document.getElementById("mnum");
+    elm.disabled = false;
+
+    mine　= [gamex];
+    isOpend = [gamex];
+    answer = [gamex];
+
+    for(let y = 0; y < gamey; y++) {
+        mine[y] = new Array(gamex).fill(0);
+        isOpend[y] = new Array(gamex).fill(0);
+        answer[y] = new Array(gamex).fill(0);
+    }
+    var level = document.getElementById("level").value;
+
+    num_mine = 0;
+    for(var ii= 0 ; ii < gamey ; ii ++){
+        for(var i = 0 ; i < gamex ; i ++){
+            var rnd = Math.floor(Math.random() * 100);
+            if (rnd >= 100-level) {
+                num_mine ++;
+                mine[i][ii] = 1;
+            }
+            else mine[i][ii] = 0;
+
+            isOpend[i][ii] = 0;
+
+        }
+    }
+    elm.value = num_mine;
+    elm.disabled = true;
+
+
+
+    //answer = [gamex][gamey];
+    //checkNumber();
+
+
+    btns = document.getElementsByClassName("btn");
+    for(var i = 0 ; i < btns.length ; i++){
+        btns[i].innerHTML = "_";
+        btns[i].style = "width:40px; height:40px; background-color:#246;";
+
+        console.log("clear")
+    }
+
+}
+
+
+function addButton(x,y){
+
+    btn = document.createElement('button');
+    //btn.textContent = mine[x][y];
+    btn.type = "button";
+    btn.dataset.x = x; //x + y * gamex;
+    btn.dataset.y = y; //x + y * gamex;
+    btn.className = "btn";
+    btn.id = x + y * gamey;
+    btn.style = "width:40px; height:40px; background-color:#246;";
+    doc.appendChild(btn);
+    btn.addEventListener('click', clickcard );
+    btn.addEventListener('contextmenu', markcard ,false);
+
+}
+
+
+function addBr(){
+
+    br = document.createElement('br');
+    doc.appendChild(br);
+
+}
+
+function clickcard(e) {
+    console.log("pushed");
+    const x = Number(e.currentTarget.dataset['x']); 
+    console.log(x);
+    const y = Number(e.currentTarget.dataset['y']); 
+    console.log(y);
+    clickcard2(x,y);
+
+}
+function clickcard2(x,y){
+    console.log(mine[x][y]);
+
+    var e = document.getElementById(x+y*gamex);
+    if ( e == null){ console.log("element not found;" + x+y*gamex)}
+
+
+    if (isOpend[x][y]== 1)
+    {
+        console.log("already opened")
+        return;
+    } else {
+        isOpend[x][y] = 1;
+    }
+
+    e.style.backgroundColor = '#fff';
+ 
+    var count = 0;
+    for( var xx = -1; xx < 2 ; xx++){
+        for( var yy = -1; yy < 2 ; yy++){
+            if( x + xx >= 0 && y + yy >= 0 && x+xx < gamex && y+yy < gamey  ){
+                 count += mine[x+xx][y+yy];
+            }
+        }
+    }
+    if( mine[x][y] != 0){
+        e.innerHTML = "M";
+	    if( gameStatus == 0){
+		    e.style.backgroundColor = 'black';
+		    e.style.color = 'white';
+		    gameover();
+	    }else{
+		    e.style.backgroundColor = 'red';
+		    e.style.color = 'black';
+	    }
+    }else{
+        if ( count == 0) {
+            expandopen(x,y);
+        }
+        e.innerHTML = count;
+        if(count == 1) e.style.backgroundColor = '#00f'
+        else if(count == 2) e.style.backgroundColor = '#0f0'
+        else if(count == 3) e.style.backgroundColor = '#0ff'
+        else if(count == 4) e.style.backgroundColor = '#f00'
+        else if(count == 5) e.style.backgroundColor = '#f0f'
+        else if(count == 6) e.style.backgroundColor = '#ff0'
+        else if(count == 7) e.style.backgroundColor = '#fff'
+        else if(count == 8) e.style.backgroundColor = '#fff'
+    
+    }
+    console.log("count:"+ count);
+}
+function expandopen(x,y){
+    var count = 0;
+    for( var xx = -1; xx < 2 ; xx++){
+        for( var yy = -1; yy < 2 ; yy++){
+            if( x + xx >= 0 && y + yy >= 0 && x+xx < gamex && y+yy < gamey  ){
+                 expandopen2(x+xx,y+yy);
+            }
+        }
+    }
+
+}
+function expandopen2(x,y){
+    clickcard2(x,y);
+}
+function checkNumber(){
+    for( var x = 0; x < gamex ; x++){
+        for( var y = 0; y < gamey ; y++){
+
+        var count = 0;
+            for( var xx = -1; xx < 2 ; xx++){
+                for( var yy = -1; yy < 2 ; yy++){
+                    if( x + xx >= 0 && y + yy >= 0 && x+xx < gamex && y+yy < gamey  ){
+                        count += mine[x+xx][y+yy];
+                    }
+                }
+            }
+            answer[x][y] = count;
+        }
+    }
+
+}
+
+function markcard(e){
+    console.log("Marked");
+    const x = Number(e.currentTarget.dataset['x']); 
+    console.log("x:"+x);
+    const y = Number(e.currentTarget.dataset['y']); 
+    console.log("y:"+y);
+
+    console.log("isOpend[x][y]="+isOpend[x][y]);
+    console.log("mine[x][y]="+mine[x][y]);
+    if( isOpend[x][y] == 0 && mine[x][y] != 0){
+        e.currentTarget.innerHTML = "S";
+        e.currentTarget.style.backgroundColor = 'red';
+        isOpend[x][y] = 2;
+        num_mine --;
+        console.log("Sweeped");
+        elm = document.getElementById("mnum").value = num_mine;
+        if (num_mine <= 0 ){
+            game_finish();
+        }
+    }else if( mine[x][y] == 0　){
+        gameover();
+    }else if( isOpend[x][y] == 2){
+        e.currentTarget.innerHTML = "_";
+        isOpend[x][y] = 0;
+        
+        console.log("already opened")
+    }
+
+    return false;
+}
+function gameover(){
+
+    if( gameStatus == 0) { 
+        gameStatus = 1; 
+        openAllCell();
+    }
+    console.log("Game Over");
+    //document.getElementById("game").innerHTML="";
+    //createTile();
+    
+    alert("Game Over");
+
+    
+
+
+}
+function openAllCell(){
+
+    for( var x = 0; x < gamex ; x++){
+        for( var y = 0; y < gamey ; y++){
+		    if( isOpend[x][y] != 2 ) clickcard2(x,y);
+	    }
+	}
+}
+function game_finish(){
+    console.log("All Mines are sweeped!");
+    alert("All mines are Sweeped!!!");
+}
+
+resetButton = document.createElement('button');
+resetButton.textContent = 'New Game';
+document.body.appendChild(resetButton);
+resetButton.addEventListener('click', createTile);
+var gameStatus = 0;
+
+
+document.oncontextmenu = function () {return false;}
+createTile();
+//initGame();
+
+</script>
+
+</html>
